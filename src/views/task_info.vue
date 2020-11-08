@@ -70,9 +70,7 @@ props: {
    },
 
    mounted () {
-    // ZA SVAKI ARRAY POZOVI MEWTODU 
-    //  this.all_tasks_array = this.someValueToPass.slice();
-    //  this.pending_tasks_array = this.someValueToPass.slice();
+
    
     this.all_tasks_array = [...this.someValueToPass];
     console.log(this.all_tasks_array)
@@ -80,8 +78,7 @@ props: {
      this.currentTabArray = this.all_tasks_array;
      this.pending_tasks_array.filter(this.overdueTasks);
      this.setLocalStorage();
-    //  console.log(this.btnClickedValue)
-    console.log(this.someValueToPass);
+   
    },
 
    methods: {
