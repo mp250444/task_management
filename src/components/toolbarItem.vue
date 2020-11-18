@@ -6,18 +6,18 @@
          <v-btn icon @click.stop="sendDrawerInfo"> 
             <v-icon color="#ffffff"> mdi-menu</v-icon>
          </v-btn>
-         <v-toolbar-title class="itemsColor">TItle</v-toolbar-title>
+         <v-toolbar-title class="itemsColor">Logo</v-toolbar-title>
          <v-spacer></v-spacer>
          <v-btn icon> 
             <v-icon color="#ffffff"> mdi-magnify</v-icon>
          </v-btn>
 
          <v-btn icon> 
-            <v-icon color="#ffffff"> mdi-heart</v-icon>
+            <v-icon color="#ffffff"> mdi-view-grid</v-icon>
          </v-btn>
 
          <v-btn icon> 
-            <v-icon color="#ffffff"> mdi-dots-vertical</v-icon>
+            <v-icon color="#ffffff">mdi-view-sequential</v-icon>
          </v-btn>
       </v-toolbar>
        
