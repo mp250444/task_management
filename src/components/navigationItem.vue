@@ -15,7 +15,8 @@
               v-for="item in items"
               :key="item.title"
               link
-              :to="item.route">
+              :to="item.route"
+              v-on="item.id == 2 ? { click:sendData} : {}">
             <v-list-item-icon>
                 <v-icon size="26">{{item.icon}}</v-icon>
             </v-list-item-icon>
@@ -35,21 +36,53 @@
 
  import {eventBus} from '../main'
     export default {
+       
         data() {
             return {
                 drawer: false,
                 items:[
-                    {title:'Create task', icon:'mdi-playlist-plus',route:'/create_task'},
-                    {title:'Task information',icon:'mdi-format-list-checks',route:'/task_info'}
-                ]
+                    {title:'Create task', icon:'mdi-playlist-plus',route:'/create_task',id:1},
+                    {title:'Task information',icon:'mdi-format-list-checks',route:'/task_info',id:2}
+                ],
+                temp:[],
+                tempClick:false,
+                
             }
         },
 
         mounted () {
         eventBus.$on('drawerInfo', (data) => {
-            this.drawer = data; 
+            this.drawer = data;
         });
+
+          eventBus.$on('task_information', (data)=> {
+         
+            this.temp.push(data);
+           
+        });
+
+          eventBus.$on('isClicked', (data)=> {
+          this.tempClick = data;
+        });
+        
+      
         },
+
+        methods:{
+           sendData() {
+               eventBus.$emit('anyNewValues', this.tempClick)
+               eventBus.$emit('anyNewValues1', this.temp)
+               this.tempClick = false;
+               this.temp = [];
+           },
+         
+         
+        },
+
+        
+
+   
+
     }
 </script>
 
