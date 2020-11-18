@@ -2,15 +2,15 @@
  <v-container>
 
   <v-tabs class="aligner"  v-model="tab" centered show-arrows slider-color="#55b949" slider-size="4">
-   <v-tab v-for="item in items" :key="item.tab" @click="activeTab(item.id)">{{ item.tab }}</v-tab>
+   <v-tab v-for="item in items" :key="item.tab" @click="activeTab(item.id)" >{{ item.tab }}</v-tab>
   </v-tabs>
 
    <v-tabs-items v-model="tab" class="aligner">
      <v-tab-item v-for="item in items" :key="item.tab">
        <v-row >
          <v-col>
-        <v-card width="500" v-for="(task, index) in currentTabArray" :key="task.title" style="margin-bottom:50px">
-          <v-card-title>{{task.title}}</v-card-title>
+        <v-card width="500" v-for="(task, index) in currentTabArray" :key="task.id" style="margin-bottom:50px">
+          <v-card-title >{{task.title}}</v-card-title>
           <v-card-text style="text-align:left">{{task.desc}}
           </v-card-text>
           <v-card-text>
@@ -21,7 +21,7 @@
         <v-row>
      <v-col style="margin-top:20px">
        <v-btn small class="editBtn" @click='editTask' outlined color="#55b949">Edit</v-btn>
-       <v-btn small class="deleteBtn"  @click='deleteTask(index, item)' outlined color="#55b949">Delete</v-btn>
+       <v-btn small class="deleteBtn"  @click='deleteTask(task, index)' outlined color="#55b949">Delete</v-btn>
      </v-col>
    </v-row>
         </v-card>
@@ -37,14 +37,12 @@
 </template>
 
 <script>
+ import { eventBus } from '../main';
 
 
 export default {
 
-props: { 
-  someValueToPass: Array,
-  btnClickedValue:Boolean,
- }, 
+
    data() {
      return {
 
@@ -55,49 +53,76 @@ props: {
          {tab:'overdue tasks', id:3}
        ],
         
-        all_tasks_array: [],
-        pending_tasks_array:[],
+        all_tasks_array:JSON.parse(localStorage.getItem("all")) || [],
+        pending_tasks_array: [],
         completed_tasks_array:[],
-        overdue_tasks_array: [],
+        overdue_tasks_array:[],
         tab:null,
         completedArray:[],
         currentTabArray:[],
         currentActiveTab:0,
-
-        
+        taskIsCreated:false,
+        tempArray:[],
+        deletionObject:{},   
 
      }
    },
 
    mounted () {
+   
+    this.activeTab(0) 
+    eventBus.$on('anyNewValues', (data)=> {
+        this.taskIsCreated = data;
+    });
+   
+     eventBus.$on('anyNewValues1', (data)=> {
+         this.tempArray = data;
+            this.initiate();
+    });
 
-   
-    this.all_tasks_array = [...this.someValueToPass];
-    console.log(this.all_tasks_array)
-     this.pendingTasks();
-     this.currentTabArray = this.all_tasks_array;
-     this.pending_tasks_array.filter(this.overdueTasks);
-     this.setLocalStorage();
-   
    },
 
+    beforeDestroy(){
+        eventBus.$off('anyNewValues', this.listener)
+        eventBus.$off('anyNewValues1', this.listener)
+    },
+
    methods: {
-
-     allTasks() {
-       this.all_tasks_array = this.someValueToPass.slice() || JSON.parse(localStorage.getItem("all"));
+     
+     initiate() {
+ 
+          if(this.all_tasks_array.length ==0) this.all_tasks_array = this.tempArray;
+          else this.all_tasks_array = [...this.all_tasks_array,...this.tempArray];
+    
+          this.manageTasks();
+          this.setLocalStorage();
      },
-     pendingTasks(){
-       this.pending_tasks_array = this.someValueToPass.slice() || JSON.parse(localStorage.getItem("pending"));
-     },
 
-      
-      activeTab(id) {
+    
+    deleteTask(clickedTask, idx) {
+        // localStorage.clear();
+     console.log(this.all_tasks_array)
+     this.deletionObject[clickedTask.id] = clickedTask;
+     console.log(this.deletionObject)
+     console.log(clickedTask)
+     console.log(idx)
+    },
+
+
+    editTask(){
+
+    },
+
+     activeTab(id) {
          this.currentActiveTab = id;
          
          switch(id) {
            case 0:
+
+             //should run update method and then set storage method 
            this.all_tasks_array = JSON.parse(localStorage.getItem("all"));
            this.currentTabArray = this.all_tasks_array; 
+           if(Object.keys(this.deletionObject).length !== 0) this.updateTasks(); 
             break;
           case 1:
             this.pending_tasks_array = JSON.parse(localStorage.getItem("pending"));
@@ -112,66 +137,43 @@ props: {
             break;
 
           default:
-          // console.log('all')
+         
           
          }
         
       },
 
-      editTask() {
+      manageTasks() {
+        let today = new Date().toISOString().slice(0, 10)
+        let currentItem = null;
+        for(let i = 0; i < this.all_tasks_array.length;i++) {
+          currentItem = this.all_tasks_array[i];
 
+           if(currentItem.date >= today) {
+             this.pending_tasks_array.push(currentItem)
+           }
+           else {
+             this.overdue_tasks_array.push(currentItem);
+           }
+          
+        }
+
+        this.setLocalStorage();
       },
 
-      deleteTask(index, tab) {
-       let currentArray = this.selectArrayForDeletion();
-           console.log(tab);
-          console.log(index);
-          currentArray.splice(index,1);
-          // console.log(this.all_tasks_array);
-           localStorage.clear();
-      
-      //  this.currentTabArray.filter(this.overdueTasks)
-       
-
-       
+      updateTasks() {
+         console.log(this.deletionObject)
       },
 
-      selectArrayForDeletion(){
-         let result = {};
-          if( this.currentActiveTab ==0) result = this.all_tasks_array;
-          if( this.currentActiveTab ==1) result = this.pending_tasks_array;
-          if( this.currentActiveTab ==2) result = this.completed_tasks_array;
-          if( this.currentActiveTab ==3) result = this.overdue_tasks_array;
-         return result;
-      },
-
-      overdueTasks(val,idx) {
-       let todaysDate = new Date().toISOString().substr(0, 10);
-         console.log(val)
-         if(val.date < todaysDate) {
-            this.overdue_tasks_array.push(val);
-            this.pending_tasks_array.splice(idx,1);
-            localStorage.setItem("overdue", JSON.stringify(this.overdue_tasks_array));
-         }
-
-
-      },
-     
-
+  
       setLocalStorage() {
-         
-        
-        if(this.someValueToPass.length !== 0){
-         localStorage.setItem("all", JSON.stringify(this.all_tasks_array));
-         localStorage.setItem("pending", JSON.stringify(this.pending_tasks_array));
-        }
-        else {
-          this.activeTab(0);
-        }
+        localStorage.setItem('all', JSON.stringify(this.all_tasks_array));
+        localStorage.setItem('pending', JSON.stringify(this.pending_tasks_array))
+        localStorage.setItem('overdue', JSON.stringify(this.overdue_tasks_array))
       }
-      
-    
+
    },
+
 
 }
 </script>
