@@ -41,7 +41,7 @@
 
    <v-row class="Aligner">
        <v-col cols=4>
-           <v-btn outlined class="button2" color="#55b949" dark @click="getTaskInfo">Create task</v-btn>
+           <v-btn outlined class="button2" color="#55b949" dark @click="getTaskInfo();">Create task</v-btn>
        </v-col>
        <v-col cols=4>
            <v-btn outlined  class="button1" color="#55b949" dark @click="clear_fields">Clear Fields</v-btn>
@@ -53,7 +53,7 @@
 </template>
 
 <script>
-
+// import Vue from 'vue';
 import { eventBus } from '../main';
     export default {
         data() {
@@ -63,10 +63,13 @@ import { eventBus } from '../main';
               task_description:'',
               clicked:false,
               
+              
             }
         },
 
         methods: {
+
+           
           
             getTaskInfo() {
               let d = new Date();
@@ -77,26 +80,26 @@ import { eventBus } from '../main';
               task_info_object.desc = this.task_description;
               task_info_object.date = this.picker;
               task_info_object.id = id; 
-             console.log(task_info_object.id)
+            
               eventBus.$emit('task_information',task_info_object);
               this.clicked = true;
               eventBus.$emit('isClicked',this.clicked);
-
               this.task_title = '';
               this.task_description ='';
               this.picker =new Date().toISOString().substr(0, 10);
+              this.clicked = false;
+             
             },
 
             clear_fields () {
               this.task_title = '';
               this.task_description ='';
               
-            }
+            },
+
         },
 
-        mounted () {
-          this.clicked = false;
-        },
+      
     }
 </script>
 
